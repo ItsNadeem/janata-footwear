@@ -1,0 +1,967 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #f8fafc;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #dc2626;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #334155;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #334155;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: #f8fafc;
+  --input-background: #f8fafc;
+  --switch-background: #e2e8f0;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #dc2626;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #dc2626;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #334155;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
+  --sidebar-ring: #dc2626;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #ef4444;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: #334155;
+  --ring: #ef4444;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #ef4444;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Hide all scrollbars globally but keep scroll functionality */
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  *::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* Janata Footwear Light Theme */
+@layer utilities {
+  /* Subtle Accent Effects */
+  .accent-red {
+    box-shadow: 
+      0 1px 3px rgba(220, 38, 38, 0.1),
+      0 1px 2px rgba(220, 38, 38, 0.06);
+  }
+
+  .accent-red-text {
+    color: #dc2626;
+  }
+
+  .accent-border {
+    border: 1px solid #dc2626;
+    box-shadow: 
+      0 1px 3px rgba(220, 38, 38, 0.1);
+  }
+
+  /* Button Utilities for Light Theme */
+  .btn-primary {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+  }
+
+  .btn-primary:hover {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+  }
+
+  .btn-secondary {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .btn-secondary:hover {
+    background: #e2e8f0 !important;
+    color: #334155 !important;
+  }
+
+  .btn-ghost {
+    background: transparent !important;
+    color: #334155 !important;
+  }
+
+  .btn-ghost:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+  }
+
+  .btn-outline {
+    background: transparent !important;
+    color: #334155 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .btn-outline:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* White/Light Button Fix */
+  .btn-white {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .btn-white:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Ensure proper contrast for light backgrounds */
+  .bg-white button,
+  .bg-slate-50 button,
+  .bg-gray-50 button {
+    color: #1e293b !important;
+  }
+
+  .bg-white button:hover,
+  .bg-slate-50 button:hover,
+  .bg-gray-50 button:hover {
+    color: #0f172a !important;
+  }
+
+  /* Force dark text on white/light buttons */
+  .bg-white.text-white,
+  button.bg-white {
+    color: #1e293b !important;
+  }
+
+  .bg-white.text-white:hover,
+  button.bg-white:hover {
+    color: #0f172a !important;
+  }
+
+  /* Admin navigation specific fixes */
+  .admin-nav-container {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Button Text Wrapping Utilities */
+  .btn-wrap {
+    white-space: normal !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+
+  .btn-nowrap {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Responsive Button Text */
+  @media (max-width: 480px) {
+    .btn-responsive {
+      font-size: 0.875rem !important; /* 14px */
+      padding: 0.625rem 0.875rem !important; /* 10px 14px */
+      white-space: normal !important;
+      line-height: 1.3 !important;
+      min-height: 2.75rem !important; /* 44px for better touch targets */
+    }
+    
+    .btn-responsive.text-xs {
+      font-size: 0.75rem !important; /* 12px */
+      min-height: 2.25rem !important; /* 36px */
+    }
+  }
+
+  /* Button Content Alignment */
+  .btn-content-center {
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .btn-content-start {
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* Custom Scrollbar - Hidden by default, can be overridden if needed */
+  .custom-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Force visible scrollbar only when explicitly needed */
+  .force-scrollbar {
+    -ms-overflow-style: auto !important;
+    scrollbar-width: thin !important;
+  }
+
+  .force-scrollbar::-webkit-scrollbar {
+    display: block !important;
+    width: 4px !important;
+  }
+
+  .force-scrollbar::-webkit-scrollbar-track {
+    background: #e2e8f0 !important;
+    border-radius: 2px !important;
+  }
+
+  .force-scrollbar::-webkit-scrollbar-thumb {
+    background: #dc2626 !important;
+    border-radius: 2px !important;
+  }
+
+  .force-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #b91c1c !important;
+  }
+
+  /* Hide scrollbars but keep functionality - now redundant but kept for compatibility */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  /* Prevent unwanted horizontal scrollbars */
+  .overflow-x-hidden {
+    overflow-x: hidden;
+  }
+
+  .max-w-screen {
+    max-width: 100vw;
+  }
+
+  /* Hide horizontal scrollbars specifically */
+  .overflow-x-auto,
+  .overflow-x-scroll {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar,
+  .overflow-x-scroll::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Thumbnail scroll areas */
+  .thumbnail-scroll,
+  .horizontal-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .thumbnail-scroll::-webkit-scrollbar,
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glass Morphism - Light */
+  .glass {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Mobile Specific */
+  .touch-action-pan-x {
+    touch-action: pan-x;
+  }
+
+  .touch-action-pan-y {
+    touch-action: pan-y;
+  }
+
+  /* Swipe Indicators */
+  .swipe-indicator-left {
+    background: linear-gradient(90deg, transparent 0%, rgba(220, 38, 38, 0.1) 100%);
+  }
+
+  .swipe-indicator-right {
+    background: linear-gradient(270deg, transparent 0%, rgba(220, 38, 38, 0.1) 100%);
+  }
+
+  /* Line Clamp Utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Light Theme Specific Utilities */
+  .bg-light-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  .bg-light-subtle {
+    background-color: #f1f5f9;
+  }
+
+  .text-light-primary {
+    color: #1e293b;
+  }
+
+  .text-light-secondary {
+    color: #64748b;
+  }
+
+  .border-light {
+    border-color: #e2e8f0;
+  }
+
+  /* Safe Area Support */
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mb-safe-area {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Bottom Navigation Specific */
+  .bottom-nav-blur {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  /* Fixed Navigation Heights */
+  .bottom-nav-height {
+    height: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  .content-with-bottom-nav {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Badge Bubble Effects */
+  .badge-bubble {
+    position: relative;
+    overflow: visible;
+  }
+
+  .badge-bubble::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: inherit;
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.3;
+    animation: bubble-pulse 2s infinite;
+  }
+
+  .badge-glow {
+    box-shadow: 
+      0 0 0 0 rgba(220, 38, 38, 0.4),
+      0 0 8px rgba(220, 38, 38, 0.2),
+      0 0 16px rgba(220, 38, 38, 0.1);
+    animation: badge-glow 2s infinite;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Better touch targets */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Safe area support for iOS */
+  .ios-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Ensure mobile scrollable areas have no scrollbars */
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .overflow-auto,
+  .overflow-scroll {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar,
+  .overflow-x-auto::-webkit-scrollbar,
+  .overflow-auto::-webkit-scrollbar,
+  .overflow-scroll::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 1px 3px rgba(220, 38, 38, 0.1),
+      0 1px 2px rgba(220, 38, 38, 0.06);
+  }
+  50% {
+    box-shadow: 
+      0 4px 6px rgba(220, 38, 38, 0.1),
+      0 2px 4px rgba(220, 38, 38, 0.06);
+  }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 2s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes nav-bounce {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-nav-bounce {
+  animation: nav-bounce 0.6s ease-in-out;
+}
+
+@keyframes bubble-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes badge-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 0 rgba(220, 38, 38, 0.4),
+      0 0 8px rgba(220, 38, 38, 0.2),
+      0 0 16px rgba(220, 38, 38, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 4px rgba(220, 38, 38, 0.2),
+      0 0 12px rgba(220, 38, 38, 0.3),
+      0 0 20px rgba(220, 38, 38, 0.15);
+  }
+}
+
+@keyframes badge-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-badge-bounce {
+  animation: badge-bounce 0.6s ease-in-out;
+}
+
+/* Slot Machine Animations */
+@keyframes slot-spin {
+  0% {
+    transform: translateY(0%) rotateX(0deg);
+  }
+  25% {
+    transform: translateY(-25%) rotateX(90deg);
+  }
+  50% {
+    transform: translateY(-50%) rotateX(180deg);
+  }
+  75% {
+    transform: translateY(-75%) rotateX(270deg);
+  }
+  100% {
+    transform: translateY(-100%) rotateX(360deg);
+  }
+}
+
+@keyframes casino-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(255, 215, 0, 0.3),
+      0 0 40px rgba(255, 215, 0, 0.2),
+      inset 0 0 20px rgba(255, 215, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(255, 215, 0, 0.5),
+      0 0 60px rgba(255, 215, 0, 0.3),
+      inset 0 0 30px rgba(255, 215, 0, 0.2);
+  }
+}
+
+@keyframes jackpot-celebration {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes discount-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-slot-spin {
+  animation: slot-spin 0.5s ease-in-out infinite;
+}
+
+.animate-casino-glow {
+  animation: casino-glow 2s ease-in-out infinite;
+}
+
+.animate-jackpot-celebration {
+  animation: jackpot-celebration 0.8s ease-in-out;
+}
+
+.animate-discount-reveal {
+  animation: discount-reveal 0.6s ease-out;
+}
+
+/* Slot Machine Specific Styles */
+.slot-machine-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid #ffd700;
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.slot-machine-border {
+  border: 2px solid #ffd700;
+  background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 215, 0, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.casino-button {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  border: 2px solid #ffd700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 15px rgba(255, 107, 107, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.casino-button:hover {
+  background: linear-gradient(45deg, #ff5252, #ff6348);
+  box-shadow: 
+    0 6px 20px rgba(255, 107, 107, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Custom Focus States */
+:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Support for notch devices */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Full Page Navigation */
+.full-page-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: white;
+}
+
+/* Prevent background scroll when overlay is open */
+.body-no-scroll {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Product Details Specific - Fixed Layout */
+.product-details-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.product-details-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.product-details-content::-webkit-scrollbar {
+  display: none;
+}
+
+.product-details-actions {
+  flex-shrink: 0;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Additional scrollable container overrides */
+.overflow-y-auto,
+.overflow-auto,
+.overflow-scroll {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
+.overflow-scroll::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Specific component scrollable areas */
+.carousel-content,
+.modal-content,
+.dropdown-content,
+.sheet-content,
+.dialog-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.carousel-content::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+.dropdown-content::-webkit-scrollbar,
+.sheet-content::-webkit-scrollbar,
+.dialog-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* Discount Wheel Container */
+.discount-wheel-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* Prevent any overflow issues */
+.contained-content {
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Smooth slide transitions */
+.slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-out-right {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
