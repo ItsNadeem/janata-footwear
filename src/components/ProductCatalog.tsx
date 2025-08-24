@@ -18,23 +18,14 @@ interface ProductCatalogProps {
   onBack: () => void;
 }
 
-interface SwipeState {
-  productId: string;
-  direction: 'left' | 'right' | null;
-  offset: number;
-}
-
 export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlist, productDiscounts, onApplyDiscount, onBack }: ProductCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-  const [swipeStates, setSwipeStates] = useState<Record<string, SwipeState>>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
 
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const touchCurrent = useRef<{ x: number; y: number } | null>(null);
   const loadingTriggerRef = useRef<HTMLDivElement>(null);
 
   const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
@@ -82,66 +73,7 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
     return wishlist.some(item => item.id === productId);
   };
 
-  const handleTouchStart = (e: React.TouchEvent, productId: string) => {
-    const touch = e.touches[0];
-    touchStart.current = { x: touch.clientX, y: touch.clientY };
-    touchCurrent.current = { x: touch.clientX, y: touch.clientY };
-  };
-
-  const handleTouchMove = (e: React.TouchEvent, productId: string) => {
-    if (!touchStart.current) return;
-
-    const touch = e.touches[0];
-    touchCurrent.current = { x: touch.clientX, y: touch.clientY };
-
-    const deltaX = touch.clientX - touchStart.current.x;
-    const deltaY = Math.abs(touch.clientY - touchStart.current.y);
-
-    if (Math.abs(deltaX) > deltaY && Math.abs(deltaX) > 10) {
-      e.preventDefault();
-
-      setSwipeStates(prev => ({
-        ...prev,
-        [productId]: {
-          productId,
-          direction: deltaX > 0 ? 'right' : 'left',
-          offset: Math.min(Math.abs(deltaX), 80)
-        }
-      }));
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent, product: Product) => {
-    if (!touchStart.current || !touchCurrent.current) return;
-
-    const deltaX = touchCurrent.current.x - touchStart.current.x;
-    const swipeThreshold = 60;
-
-    if (Math.abs(deltaX) > swipeThreshold) {
-      if (deltaX > 0) {
-        onAddToWishlist(product);
-      } else {
-        const discount = productDiscounts[product.id]?.discount;
-        onAddToCart(product, undefined, discount);
-      }
-    }
-
-    setSwipeStates(prev => {
-      const newState = { ...prev };
-      delete newState[product.id];
-      return newState;
-    });
-
-    touchStart.current = null;
-    touchCurrent.current = null;
-  };
-
   const ProductListItem = ({ product }: { product: Product }) => {
-    const swipeState = swipeStates[product.id];
-    const transform = swipeState
-      ? `translateX(${swipeState.direction === 'right' ? swipeState.offset : -swipeState.offset}px)`
-      : 'translateX(0px)';
-
     return (
       <motion.div
         className="relative overflow-hidden"
@@ -149,23 +81,9 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Swipe Actions Background */}
-        <div className="absolute inset-0 flex">
-          <div className="flex-1 bg-pink-100 flex items-center justify-start pl-6">
-            <Heart className="w-6 h-6 text-pink-500" />
-          </div>
-          <div className="flex-1 bg-blue-100 flex items-center justify-end pr-6">
-            <ShoppingCart className="w-6 h-6 text-blue-500" />
-          </div>
-        </div>
-
         {/* Product Card */}
         <motion.div
           className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-          style={{ transform }}
-          onTouchStart={(e) => handleTouchStart(e, product.id)}
-          onTouchMove={(e) => handleTouchMove(e, product.id)}
-          onTouchEnd={(e) => handleTouchEnd(e, product)}
           onClick={() => setSelectedProduct(product)}
           whileTap={{ scale: 0.98 }}
         >
@@ -242,32 +160,11 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
             </Button>
           </div>
         </motion.div>
-
-        {swipeState && (
-          <div className="absolute inset-y-0 flex items-center pointer-events-none">
-            {swipeState.direction === 'right' ? (
-              <div className="flex items-center gap-2 text-pink-500 pl-4">
-                <Heart className="w-5 h-5" />
-                <span className="text-sm font-medium">Add to Wishlist</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-blue-500 pr-4 ml-auto">
-                <span className="text-sm font-medium">Add to Cart</span>
-                <ShoppingCart className="w-5 h-5" />
-              </div>
-            )}
-          </div>
-        )}
       </motion.div>
     );
   };
 
   const ProductGridItem = ({ product }: { product: Product }) => {
-    const swipeState = swipeStates[product.id];
-    const transform = swipeState
-      ? `translateX(${swipeState.direction === 'right' ? swipeState.offset : -swipeState.offset}px)`
-      : 'translateX(0px)';
-
     return (
       <motion.div
         className="relative overflow-hidden"
@@ -276,21 +173,8 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
         whileHover={{ y: -2 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="absolute inset-0 flex">
-          <div className="flex-1 bg-pink-100 flex items-center justify-center">
-            <Heart className="w-6 h-6 text-pink-500" />
-          </div>
-          <div className="flex-1 bg-blue-100 flex items-center justify-center">
-            <ShoppingCart className="w-6 h-6 text-blue-500" />
-          </div>
-        </div>
-
         <motion.div
           className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-          style={{ transform }}
-          onTouchStart={(e) => handleTouchStart(e, product.id)}
-          onTouchMove={(e) => handleTouchMove(e, product.id)}
-          onTouchEnd={(e) => handleTouchEnd(e, product)}
           onClick={() => setSelectedProduct(product)}
           whileTap={{ scale: 0.98 }}
         >
@@ -362,22 +246,6 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
             </div>
           </div>
         </motion.div>
-
-        {swipeState && (
-          <div className="absolute inset-y-0 flex items-center pointer-events-none">
-            {swipeState.direction === 'right' ? (
-              <div className="flex items-center gap-2 text-pink-500 pl-4">
-                <Heart className="w-5 h-5" />
-                <span className="text-sm font-medium">Add to Wishlist</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-blue-500 pr-4 ml-auto">
-                <span className="text-sm font-medium">Add to Cart</span>
-                <ShoppingCart className="w-5 h-5" />
-              </div>
-            )}
-          </div>
-        )}
       </motion.div>
     );
   };
@@ -430,13 +298,6 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
             </Button>
           ))}
         </div>
-      </div>
-
-      {/* Swipe Instructions */}
-      <div className="p-4 bg-gradient-to-r from-pink-50 to-blue-50 border-b border-slate-200">
-        <p className="text-center text-sm text-slate-600">
-          💡 Swipe right to add to wishlist, swipe left to add to cart
-        </p>
       </div>
 
       {/* Products List/Grid */}
