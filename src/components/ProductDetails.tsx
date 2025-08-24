@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ArrowLeft, Heart, ShoppingCart, Star, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingCart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { type Product, type ProductDiscount } from '../App';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { DiscountWheel } from './DiscountWheel';
 
 interface ProductDetailsProps {
   product: Product;
@@ -13,7 +12,6 @@ interface ProductDetailsProps {
   productDiscount?: ProductDiscount;
   onAddToCart: (product: Product, size?: string, discount?: number) => void;
   onAddToWishlist: (product: Product) => void;
-  onApplyDiscount: (productId: string, discount: number) => void;
   onBack: () => void;
 }
 
@@ -23,10 +21,8 @@ export function ProductDetails({
   productDiscount,
   onAddToCart,
   onAddToWishlist,
-  onApplyDiscount,
   onBack
 }: ProductDetailsProps) {
-  const [showDiscountWheel, setShowDiscountWheel] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -47,39 +43,20 @@ export function ProductDetails({
     setCurrentImageIndex(index);
   };
 
-  // Touch/swipe handling for image navigation
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && productImages.length > 1) {
-      nextImage();
-    }
-    if (isRightSwipe && productImages.length > 1) {
-      prevImage();
-    }
-  };
-
   const discountedPrice = productDiscount
     ? product.price * (1 - productDiscount.discount / 100)
     : product.price;
+
+  const handleAddToCart = () => {
+    // Check if size selection is required but missing
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      // Don't add to cart, just return early
+      return;
+    }
+
+    const discount = productDiscount?.discount;
+    onAddToCart(product, selectedSize, discount);
+  };
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
@@ -112,31 +89,17 @@ export function ProductDetails({
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-32">
         {/* Product Images Carousel */}
-        <div
-          className="aspect-square bg-slate-100 relative flex-shrink-0 overflow-hidden"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
+        <div className="aspect-square bg-slate-100 relative flex-shrink-0 overflow-hidden">
           {/* Main Image Display */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              initial={{ opacity: 0, x: 300 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -300 }}
-              transition={{ duration: 0.3 }}
-              className="w-full h-full"
-            >
-              <ImageWithFallback
-                src={productImages[currentImageIndex]}
-                alt={`${product.name} - Image ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
+          <div className="w-full h-full">
+            <ImageWithFallback
+              src={productImages[currentImageIndex]}
+              alt={`${product.name} - Image ${currentImageIndex + 1}`}
+              className="w-full h-full object-cover transition-opacity duration-200"
+            />
+          </div>
 
           {/* Navigation Arrows */}
           {productImages.length > 1 && (
@@ -225,14 +188,14 @@ export function ProductDetails({
         )}
 
         {/* Product Info */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-6">
           {/* Name and Price */}
           <div>
             <h2 className="text-2xl font-bold text-slate-900 mb-3">{product.name}</h2>
 
             {/* Price with discount */}
             {productDiscount ? (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <p className="text-lg text-slate-500 line-through">₹{product.price.toLocaleString()}</p>
                 <div className="flex items-center gap-3">
                   <p className="text-3xl font-bold text-green-600">
@@ -316,6 +279,13 @@ export function ProductDetails({
                   </Button>
                 ))}
               </div>
+              {selectedSize && (
+                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-700 text-center font-medium">
+                    ✓ Size {selectedSize} selected - Ready to add to cart!
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -331,72 +301,55 @@ export function ProductDetails({
             </div>
           </div>
 
-          {/* Discount Wheel Section */}
-          {showDiscountWheel ? (
-            <div className="bg-slate-50 rounded-2xl p-4 mx-0 overflow-hidden">
-              <DiscountWheel
-                productId={product.id}
-                originalPrice={product.price}
-                onDiscountApplied={onApplyDiscount}
-                onClose={() => setShowDiscountWheel(false)}
-              />
-            </div>
-          ) : !productDiscount && (
-            <div className="w-full">
-              <Button
-                onClick={() => setShowDiscountWheel(true)}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl"
-              >
-                <Zap className="w-5 h-5 mr-2" />
-                Find Your Discount 🎰
-              </Button>
+          {/* Add to Cart and Wishlist Buttons */}
+          <div className="space-y-3">
+            <Button
+              onClick={handleAddToCart}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl disabled:bg-slate-300 disabled:text-slate-500"
+              disabled={product.stock === 0 || (product.sizes && product.sizes.length > 0 && !selectedSize)}
+            >
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              {product.stock === 0
+                ? 'Out of Stock'
+                : (product.sizes && product.sizes.length > 0 && !selectedSize)
+                  ? 'Select Size First'
+                  : 'Add to Cart'
+              }
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => onAddToWishlist(product)}
+              className={`w-full py-3 rounded-xl border-2 font-semibold ${isInWishlist
+                ? 'border-pink-300 text-pink-600 bg-pink-50 hover:bg-pink-100 hover:border-pink-400'
+                : 'border-slate-300 text-slate-600 hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50'
+                }`}
+            >
+              <Heart className={`w-5 h-5 mr-2 ${isInWishlist ? 'fill-current' : ''}`} />
+              {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            </Button>
+          </div>
+
+          {/* Size Selection Reminder */}
+          {product.sizes && product.sizes.length > 0 && !selectedSize && (
+            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+              <p className="text-sm text-red-700 text-center font-medium">
+                ⚠️ Please select a size before adding to cart
+              </p>
             </div>
           )}
 
-          {/* Bottom spacing for fixed actions */}
-          <div className="h-32"></div>
-        </div>
-      </div>
-
-      {/* Fixed Bottom Actions */}
-      <div className="flex-shrink-0 bg-white border-t border-slate-200 p-4 shadow-lg">
-        <div className="flex gap-3">
-          <Button
-            onClick={() => {
-              const discount = productDiscount?.discount;
-              onAddToCart(product, selectedSize, discount);
-            }}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-xl"
-            disabled={product.stock === 0}
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={() => onAddToWishlist(product)}
-            className={`px-4 py-4 rounded-xl border-2 ${isInWishlist
-              ? 'border-pink-300 text-pink-600 bg-pink-50 hover:bg-pink-100'
-              : 'border-slate-300 text-slate-600 hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50'
-              }`}
-          >
-            <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
-          </Button>
-        </div>
-
-        {/* Price Summary in Bottom Bar */}
-        {productDiscount && (
-          <div className="mt-3 text-center">
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <span className="text-slate-500 line-through">₹{product.price.toLocaleString()}</span>
-              <span className="text-green-600 font-semibold">₹{Math.round(discountedPrice).toLocaleString()}</span>
-              <span className="text-green-600 text-xs">
-                (Save ₹{Math.round(product.price - discountedPrice).toLocaleString()})
-              </span>
+          {/* Discount Information */}
+          {productDiscount && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="text-green-700 font-medium">
+                  🎉 You're saving ₹{Math.round(product.price - discountedPrice).toLocaleString()} with {productDiscount.discount}% discount!
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

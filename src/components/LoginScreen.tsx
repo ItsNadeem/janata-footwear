@@ -3,9 +3,8 @@ import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Smartphone, Shield, User, ArrowRight } from 'lucide-react';
+import { Smartphone, ArrowRight } from 'lucide-react';
 import { type UserRole } from '../App';
 import shoeaLogo from 'figma:asset/22a145728baa3db5f87cbff33464e96e1f1f2ffa.png';
 
@@ -17,8 +16,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [showOTP, setShowOTP] = useState(false);
-  const [role, setRole] = useState<UserRole>('customer');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Determine role based on phone number
+  const determineRole = (phoneNumber: string): UserRole => {
+    return phoneNumber === '1234567890' ? 'admin' : 'customer';
+  };
 
   const handleSendOTP = async () => {
     if (phone.length !== 10) return;
@@ -37,7 +40,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      onLogin(phone, role);
+      const userRole = determineRole(phone);
+      onLogin(phone, userRole);
       setIsLoading(false);
     }, 1000);
   };
@@ -86,59 +90,29 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 animate={{ opacity: 1 }}
                 className="space-y-6"
               >
-                {/* Role Selection */}
+                {/* Role Information Display */}
                 <div className="space-y-3">
-                  <Label className="text-slate-700">Login as</Label>
-                  <RadioGroup value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                    <div className="grid grid-cols-2 gap-3">
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${role === 'customer'
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                          }`}
-                        onClick={() => setRole('customer')}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="customer" id="customer" className="text-red-500" />
-                          <div className="flex items-center gap-2 flex-1">
-                            <User className="w-5 h-5 text-slate-600" />
-                            <Label htmlFor="customer" className="font-medium text-slate-700 cursor-pointer">
-                              Customer
-                            </Label>
-                          </div>
-                        </div>
-                      </motion.div>
-
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${role === 'admin'
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                          }`}
-                        onClick={() => setRole('admin')}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="admin" id="admin" className="text-red-500" />
-                          <div className="flex items-center gap-2 flex-1">
-                            <Shield className="w-5 h-5 text-slate-600" />
-                            <Label htmlFor="admin" className="font-medium text-slate-700 cursor-pointer">
-                              Admin
-                            </Label>
-                          </div>
-                        </div>
-                      </motion.div>
+                  <Label className="text-slate-700 text-sm font-medium">Account Type</Label>
+                  <div className="p-3 rounded-xl border-2 border-slate-200 bg-slate-50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm text-slate-600">
+                        {phone === '1234567890' ? 'Admin Access' : 'Customer Account'}
+                      </span>
                     </div>
-                  </RadioGroup>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {phone === '1234567890'
+                        ? 'You will have admin privileges'
+                        : 'Standard customer account'}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Phone Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-slate-700">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-slate-700 text-sm font-medium">Phone Number</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">+91</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">+91</span>
                     <Input
                       id="phone"
                       type="tel"
@@ -160,13 +134,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl btn-wrap btn-responsive"
                 >
                   {isLoading ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-center">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending OTP...
+                      <span className="text-sm">Sending OTP...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      Send OTP
+                    <div className="flex items-center gap-2 justify-center">
+                      <span>Send OTP</span>
                       <ArrowRight className="w-4 h-4" />
                     </div>
                   )}
@@ -180,13 +154,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               >
                 {/* OTP Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-slate-700">Enter OTP</Label>
+                  <Label htmlFor="otp" className="text-slate-700 text-sm font-medium">Enter OTP</Label>
                   <Input
                     id="otp"
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="text-center text-2xl tracking-widest bg-white border-slate-300 text-slate-900 focus:border-red-500 focus:ring-red-500/20"
+                    className="text-center text-xl tracking-widest bg-white border-slate-300 text-slate-900 focus:border-red-500 focus:ring-red-500/20"
                     placeholder="123456"
                     maxLength={6}
                   />
@@ -203,7 +177,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   <Button
                     variant="outline"
                     onClick={() => setShowOTP(false)}
-                    className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50"
+                    className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50 btn-responsive"
                   >
                     Back
                   </Button>
@@ -213,12 +187,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold btn-wrap btn-responsive"
                   >
                     {isLoading ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-center">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Verifying...
+                        <span className="text-sm">Verifying...</span>
                       </div>
                     ) : (
-                      'Verify & Login'
+                      <span className="text-sm">Verify & Login</span>
                     )}
                   </Button>
                 </div>

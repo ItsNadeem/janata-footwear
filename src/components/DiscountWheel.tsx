@@ -100,6 +100,8 @@ export function DiscountWheel({ productId, originalPrice, onDiscountApplied, onC
   const handleTryAgain = () => {
     setDiscountState(prev => ({ ...prev, currentDiscount: null }));
     setShowCelebration(false);
+    // Reset to initial state
+    setSpinNumbers([5, 5, 5]);
   };
 
   const discountedPrice = discountState.currentDiscount 
@@ -153,16 +155,19 @@ export function DiscountWheel({ productId, originalPrice, onDiscountApplied, onC
               <div className="flex gap-1">
                 {spinNumbers.map((number, index) => (
                   <motion.div
-                    key={`${index}-${number}`}
+                    key={`${index}-${number}-${discountState.isSpinning}`}
                     className="w-12 h-16 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-yellow-500 relative overflow-hidden"
                     animate={discountState.isSpinning ? {
                       rotateX: [0, 360],
                       scale: [1, 1.05, 1]
-                    } : {}}
+                    } : {
+                      rotateX: 0,
+                      scale: 1
+                    }}
                     transition={{
-                      duration: 0.3,
+                      duration: discountState.isSpinning ? 0.3 : 0.5,
                       repeat: discountState.isSpinning ? Infinity : 0,
-                      ease: "easeInOut"
+                      ease: discountState.isSpinning ? "easeInOut" : "easeOut"
                     }}
                   >
                     <span className="text-lg font-bold text-yellow-400">

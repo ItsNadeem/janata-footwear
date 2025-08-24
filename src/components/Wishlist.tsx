@@ -3,18 +3,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
-import { ArrowLeft, Heart, ShoppingCart, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingCart, Star, Trash2, Eye } from 'lucide-react';
 import { type Product } from '../App';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface WishlistProps {
   items: Product[];
   onAddToCart: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
   onRemoveFromWishlist: (product: Product) => void;
   onBack: () => void;
 }
 
-export function Wishlist({ items, onAddToCart, onRemoveFromWishlist, onBack }: WishlistProps) {
+export function Wishlist({ items, onAddToCart, onViewProduct, onRemoveFromWishlist, onBack }: WishlistProps) {
   const ItemCard = ({ item, index }: { item: Product; index: number }) => (
     <motion.div
       layout
@@ -66,12 +67,12 @@ export function Wishlist({ items, onAddToCart, onRemoveFromWishlist, onBack }: W
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  onClick={() => onAddToCart(item)}
+                  onClick={() => onViewProduct(item)}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-2 btn-wrap"
                   disabled={item.stock === 0}
                 >
-                  <ShoppingCart className="w-3 h-3 mr-1" />
-                  {item.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  <Eye className="w-3 h-3 mr-1" />
+                  {item.stock === 0 ? 'Out of Stock' : 'View Details'}
                 </Button>
                 <Button
                   size="sm"
@@ -131,15 +132,15 @@ export function Wishlist({ items, onAddToCart, onRemoveFromWishlist, onBack }: W
           onClick={() => {
             items.forEach(item => {
               if (item.stock > 0) {
-                onAddToCart(item);
+                onViewProduct(item);
               }
             });
           }}
           disabled={items.every(item => item.stock === 0)}
           className="border-slate-300 text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 btn-wrap"
         >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Add All to Cart
+          <Eye className="w-4 h-4 mr-2" />
+          View All
         </Button>
 
         <Button

@@ -227,6 +227,213 @@ html {
       0 1px 3px rgba(220, 38, 38, 0.1);
   }
 
+  /* ==================== TARGETED BUTTON TEXT COLOR FIXES ==================== */
+
+  /* BUTTON-ONLY Red Background = White Text */
+  button.bg-red-400,
+  button.bg-red-500,
+  button.bg-red-600,
+  button.bg-red-700,
+  button.bg-red-800,
+  button.bg-red-900 {
+    color: #ffffff !important;
+  }
+
+  button.bg-red-400:hover,
+  button.bg-red-500:hover,
+  button.bg-red-600:hover,
+  button.bg-red-700:hover,
+  button.bg-red-800:hover,
+  button.bg-red-900:hover {
+    color: #ffffff !important;
+  }
+
+  button.bg-red-400:focus,
+  button.bg-red-500:focus,
+  button.bg-red-600:focus,
+  button.bg-red-700:focus,
+  button.bg-red-800:focus,
+  button.bg-red-900:focus {
+    color: #ffffff !important;
+  }
+
+  button.bg-red-400:active,
+  button.bg-red-500:active,
+  button.bg-red-600:active,
+  button.bg-red-700:active,
+  button.bg-red-800:active,
+  button.bg-red-900:active {
+    color: #ffffff !important;
+  }
+
+  /* BUTTON-ONLY Wildcard for red backgrounds */
+  button[class*="bg-red-"] {
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-red-"]:hover {
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-red-"]:focus {
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-red-"]:active {
+    color: #ffffff !important;
+  }
+
+  /* BUTTON-ONLY Red Gradient Backgrounds = White Text */
+  button[class*="from-red-"],
+  button[class*="to-red-"],
+  button[class*="via-red-"] {
+    color: #ffffff !important;
+  }
+
+  button[class*="from-red-"]:hover,
+  button[class*="to-red-"]:hover,
+  button[class*="via-red-"]:hover {
+    color: #ffffff !important;
+  }
+
+  button[class*="from-red-"]:focus,
+  button[class*="to-red-"]:focus,
+  button[class*="via-red-"]:focus {
+    color: #ffffff !important;
+  }
+
+  button[class*="from-red-"]:active,
+  button[class*="to-red-"]:active,
+  button[class*="via-red-"]:active {
+    color: #ffffff !important;
+  }
+
+  /* BUTTON-ONLY White Background = Black Text */
+  button.bg-white,
+  button.bg-slate-50,
+  button.bg-slate-100,
+  button.bg-gray-50,
+  button.bg-gray-100 {
+    color: #1e293b !important;
+  }
+
+  button.bg-white:hover,
+  button.bg-slate-50:hover,
+  button.bg-slate-100:hover,
+  button.bg-gray-50:hover,
+  button.bg-gray-100:hover {
+    color: #0f172a !important;
+  }
+
+  button.bg-white:focus,
+  button.bg-slate-50:focus,
+  button.bg-slate-100:focus,
+  button.bg-gray-50:focus,
+  button.bg-gray-100:focus {
+    color: #1e293b !important;
+  }
+
+  button.bg-white:active,
+  button.bg-slate-50:active,
+  button.bg-slate-100:active,
+  button.bg-gray-50:active,
+  button.bg-gray-100:active {
+    color: #0f172a !important;
+  }
+
+  /* BUTTON-ONLY Wildcard for white backgrounds */
+  button[class*="bg-white"],
+  button[class*="bg-slate-"],
+  button[class*="bg-gray-"] {
+    color: #1e293b !important;
+  }
+
+  button[class*="bg-white"]:hover,
+  button[class*="bg-slate-"]:hover,
+  button[class*="bg-gray-"]:hover {
+    color: #0f172a !important;
+  }
+
+  button[class*="bg-white"]:focus,
+  button[class*="bg-slate-"]:focus,
+  button[class*="bg-gray-"]:focus {
+    color: #1e293b !important;
+  }
+
+  button[class*="bg-white"]:active,
+  button[class*="bg-slate-"]:active,
+  button[class*="bg-gray-"]:active {
+    color: #0f172a !important;
+  }
+
+  /* Override conflicting text classes on buttons only */
+  button.bg-red-400.text-black,
+  button.bg-red-500.text-black,
+  button.bg-red-600.text-black,
+  button.bg-red-700.text-black,
+  button.bg-red-800.text-black,
+  button.bg-red-900.text-black,
+  button.bg-red-400.text-slate-900,
+  button.bg-red-500.text-slate-900,
+  button.bg-red-600.text-slate-900,
+  button.bg-red-700.text-slate-900,
+  button.bg-red-800.text-slate-900,
+  button.bg-red-900.text-slate-900 {
+    color: #ffffff !important;
+  }
+
+  button.bg-white.text-white,
+  button.bg-slate-50.text-white,
+  button.bg-slate-100.text-white,
+  button.bg-gray-50.text-white,
+  button.bg-gray-100.text-white {
+    color: #1e293b !important;
+  }
+
+  /* ==================== UTILITY CLASSES ==================== */
+
+  .btn-red-white {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+  }
+
+  .btn-red-white:hover {
+    background-color: #b91c1c !important;
+    color: #ffffff !important;
+  }
+
+  .btn-red-white:focus {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+  }
+
+  .btn-red-white:active {
+    background-color: #991b1b !important;
+    color: #ffffff !important;
+  }
+
+  .btn-white-black {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .btn-white-black:hover {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  .btn-white-black:focus {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+  }
+
+  .btn-white-black:active {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+
   /* Button Utilities for Light Theme */
   .btn-primary {
     background: #dc2626 !important;
@@ -236,6 +443,16 @@ html {
 
   .btn-primary:hover {
     background: #b91c1c !important;
+    color: #ffffff !important;
+  }
+
+  .btn-primary:focus {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+  }
+
+  .btn-primary:active {
+    background: #991b1b !important;
     color: #ffffff !important;
   }
 
@@ -283,30 +500,6 @@ html {
     background: #f8fafc !important;
     color: #0f172a !important;
     border-color: #cbd5e1 !important;
-  }
-
-  /* Ensure proper contrast for light backgrounds */
-  .bg-white button,
-  .bg-slate-50 button,
-  .bg-gray-50 button {
-    color: #1e293b !important;
-  }
-
-  .bg-white button:hover,
-  .bg-slate-50 button:hover,
-  .bg-gray-50 button:hover {
-    color: #0f172a !important;
-  }
-
-  /* Force dark text on white/light buttons */
-  .bg-white.text-white,
-  button.bg-white {
-    color: #1e293b !important;
-  }
-
-  .bg-white.text-white:hover,
-  button.bg-white:hover {
-    color: #0f172a !important;
   }
 
   /* Admin navigation specific fixes */
@@ -605,6 +798,29 @@ html {
   .overflow-scroll::-webkit-scrollbar {
     display: none !important;
   }
+
+  /* Mobile button text fixes */
+  button[class*="bg-red-"] {
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-red-"]:hover,
+  button[class*="bg-red-"]:focus,
+  button[class*="bg-red-"]:active {
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-white"],
+  button[class*="bg-slate-"],
+  button[class*="bg-gray-"] {
+    color: #1e293b !important;
+  }
+
+  button[class*="bg-white"]:hover,
+  button[class*="bg-slate-"]:hover,
+  button[class*="bg-gray-"]:hover {
+    color: #0f172a !important;
+  }
 }
 
 /* Animation Keyframes */
@@ -821,6 +1037,7 @@ html {
     0 4px 15px rgba(255, 107, 107, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  color: #ffffff !important;
 }
 
 .casino-button:hover {
@@ -829,6 +1046,7 @@ html {
     0 6px 20px rgba(255, 107, 107, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
+  color: #ffffff !important;
 }
 
 /* Custom Focus States */
@@ -837,11 +1055,139 @@ html {
   outline-offset: 2px;
 }
 
-/* Smooth Transitions */
+/* Minimal Transitions - Optimized for Speed */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-timing-function: ease;
+  transition-duration: 100ms;
+}
+
+/* Even faster transitions for navigation elements */
+nav *, [data-nav] *, .navigation-item {
+  transition-duration: 50ms;
+}
+
+/* Prevent transition glitches on transform */
+.will-change-transform * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Performance optimizations for animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Prevent animation conflicts during rapid navigation */
+.screen-transition {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Loading State Improvements */
+.loading-spinner {
+  border-width: 3px;
+  border-style: solid;
+  border-color: #dc2626 transparent #dc2626 transparent;
+  border-radius: 50%;
+  animation: loading-spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes loading-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Smooth Navigation Transitions */
+.nav-slide-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.nav-slide-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 250ms ease-out;
+}
+
+.nav-slide-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.nav-slide-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 250ms ease-out;
+}
+
+/* Prevent layout shift during transitions */
+.layout-stable {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Optimized container for screen content */
+.screen-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Enhanced transition for mobile */
+@media (max-width: 768px) {
+  .screen-transition {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+  }
+}
+
+/* Optimize motion components */
+[data-motion-component] {
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-pulse {
+    animation: none !important;
+  }
+  
+  .animate-bounce {
+    animation: none !important;
+  }
+  
+  .animate-spin {
+    animation: none !important;
+  }
 }
 
 /* Support for notch devices */
@@ -964,4 +1310,278 @@ html {
   to {
     transform: translateX(100%);
   }
+}
+
+/* Enhanced Screen Transition Animations */
+@keyframes screen-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes screen-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes screen-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes screen-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes screen-fade-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Enhanced Carousel Animations */
+@keyframes carousel-slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes carousel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes product-card-hover {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes rating-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes price-highlight {
+  0%, 100% {
+    color: inherit;
+  }
+  50% {
+    color: #dc2626;
+    transform: scale(1.05);
+  }
+}
+
+.animate-carousel-slide {
+  animation: carousel-slide 20s linear infinite;
+}
+
+.animate-carousel-fade-in {
+  animation: carousel-fade-in 0.6s ease-out;
+}
+
+.animate-product-card-hover {
+  animation: product-card-hover 0.3s ease-out forwards;
+}
+
+.animate-rating-pulse {
+  animation: rating-pulse 2s infinite;
+}
+
+.animate-price-highlight {
+  animation: price-highlight 0.4s ease-in-out;
+}
+
+/* Featured Collection Enhancements */
+.featured-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.featured-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.05);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.featured-card-image {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featured-card:hover .featured-card-image {
+  transform: scale(1.05);
+}
+
+/* Quick Action Buttons */
+.quick-action-btn {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure red quick action buttons have white text (BUTTON-ONLY) */
+button.quick-action-btn[class*="bg-red-"] {
+  color: #ffffff !important;
+}
+
+button.quick-action-btn[class*="bg-red-"]:hover {
+  color: #ffffff !important;
+}
+
+/* Carousel Gradient Overlays */
+.carousel-gradient-left {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.9) 30%, rgba(254, 242, 242, 0.8) 70%, transparent 100%);
+}
+
+.carousel-gradient-right {
+  background: linear-gradient(270deg, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.9) 30%, rgba(254, 242, 242, 0.8) 70%, transparent 100%);
+}
+
+/* Badge Animations */
+@keyframes badge-glow-featured {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(34, 197, 94, 0.4);
+  }
+}
+
+.animate-badge-glow-featured {
+  animation: badge-glow-featured 2s ease-in-out infinite;
+}
+
+/* Product Info Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+.animate-slide-up-delay-1 {
+  animation: slide-up 0.4s ease-out 0.1s both;
+}
+
+.animate-slide-up-delay-2 {
+  animation: slide-up 0.4s ease-out 0.2s both;
+}
+
+.animate-slide-up-delay-3 {
+  animation: slide-up 0.4s ease-out 0.3s both;
+}
+
+/* Screen transition utility classes */
+.animate-screen-slide-in-right {
+  animation: screen-slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-screen-slide-in-left {
+  animation: screen-slide-in-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-screen-slide-out-left {
+  animation: screen-slide-out-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-screen-slide-out-right {
+  animation: screen-slide-out-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-screen-fade-up {
+  animation: screen-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading state improvements */
+.loading-state {
+  pointer-events: none;
+  user-select: none;
+}
+
+.loading-overlay {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* Smooth scroll for content areas */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Stagger animations for lists and grids */
+.stagger-children > * {
+  animation-delay: calc(var(--stagger-delay, 0.1s) * var(--index, 0));
+}
+
+/* Navigation performance optimizations */
+.nav-optimized {
+  contain: layout style paint;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }

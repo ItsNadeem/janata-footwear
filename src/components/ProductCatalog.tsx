@@ -3,40 +3,44 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
-import { ArrowLeft, Search, Heart, ShoppingCart, Star, Grid, List, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Heart, ShoppingCart, Star, Eye, Zap } from 'lucide-react';
 import { type Product, type ProductDiscount } from '../App';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { ProductDetails } from './ProductDetails';
+
 
 interface ProductCatalogProps {
   products: Product[];
   onAddToCart: (product: Product, size?: string, discount?: number) => void;
   onAddToWishlist: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
   wishlist: Product[];
   productDiscounts: Record<string, ProductDiscount>;
   onApplyDiscount: (productId: string, discount: number) => void;
   onBack: () => void;
 }
 
-export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlist, productDiscounts, onApplyDiscount, onBack }: ProductCatalogProps) {
+export function ProductCatalog({ products, onAddToCart, onAddToWishlist, onViewProduct, wishlist, productDiscounts, onApplyDiscount, onBack }: ProductCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [visibleCount, setVisibleCount] = useState(6);
+
+  const [visibleCount, setVisibleCount] = useState(8);
   const [isLoading, setIsLoading] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   const loadingTriggerRef = useRef<HTMLDivElement>(null);
 
   const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
-  // Filter products based on search and category
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Filter products based on search and category only
+  const filteredProducts = React.useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, selectedCategory]);
 
   // Get currently displayed products
   const displayedProducts = filteredProducts.slice(0, visibleCount);
@@ -44,8 +48,20 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
 
   // Reset visible count when filters change
   useEffect(() => {
-    setVisibleCount(6);
+    setVisibleCount(8);
   }, [searchQuery, selectedCategory]);
+
+  // Check for selected product from carousel on component mount
+  useEffect(() => {
+    const selectedProductId = sessionStorage.getItem('selectedProductId');
+    if (selectedProductId) {
+      const selectedProduct = products.find(p => p.id === selectedProductId);
+      if (selectedProduct) {
+        onViewProduct(selectedProduct);
+        sessionStorage.removeItem('selectedProductId'); // Clean up
+      }
+    }
+  }, [products, onViewProduct]);
 
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -54,9 +70,9 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
         if (entries[0].isIntersecting && hasMore && !isLoading) {
           setIsLoading(true);
           setTimeout(() => {
-            setVisibleCount(prev => prev + 6);
+            setVisibleCount(prev => prev + 8);
             setIsLoading(false);
-          }, 800);
+          }, 400);
         }
       },
       { threshold: 0.1 }
@@ -73,179 +89,128 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
     return wishlist.some(item => item.id === productId);
   };
 
-  const ProductListItem = ({ product }: { product: Product }) => {
+  const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const discount = productDiscounts[product.id]?.discount;
+    onAddToCart(product, undefined, discount);
+  };
+
+  const CleanProductCard = ({ product }: { product: Product }) => {
+    const hasDiscount = productDiscounts[product.id];
+    const discountedPrice = hasDiscount
+      ? product.price * (1 - hasDiscount.discount / 100)
+      : product.price;
+
     return (
       <motion.div
-        className="relative overflow-hidden"
+        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col h-full cursor-pointer"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        onClick={() => onViewProduct(product)}
+        whileHover={{ y: -2, borderColor: "rgb(220 38 38 / 0.2)" }}
+        whileTap={{ scale: 0.98 }}
       >
-        {/* Product Card */}
-        <motion.div
-          className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => setSelectedProduct(product)}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className="flex p-4 gap-4">
-            <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 relative">
-              <ImageWithFallback
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              {product.stock < 5 && (
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 py-0">
-                  Low Stock
-                </Badge>
-              )}
-            </div>
+        {/* Product Image */}
+        <div className="aspect-square bg-slate-100 relative overflow-hidden">
+          <ImageWithFallback
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          />
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-slate-900 line-clamp-2 pr-2">{product.name}</h3>
-                {isInWishlist(product.id) && (
-                  <div className="w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Heart className="w-3 h-3 text-white fill-current" />
-                  </div>
-                )}
-              </div>
-
-              <p className="text-red-600 font-bold text-lg mb-2">₹{product.price.toLocaleString()}</p>
-
-              <div className="flex flex-wrap gap-1 mb-2">
-                {product.tags.slice(0, 2).map(tag => (
-                  <Badge key={tag} variant="secondary" className="text-xs bg-slate-100 text-slate-600 border-slate-200">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="w-3 h-3 text-yellow-500 fill-current" />
-                  ))}
-                  <span className="text-xs text-slate-500 ml-1">4.5</span>
-                </div>
-                <span className="text-xs text-slate-500">{product.stock} in stock</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-2 p-4 pt-0">
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                const discount = productDiscounts[product.id]?.discount;
-                onAddToCart(product, undefined, discount);
-              }}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-2 btn-wrap"
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
+          {/* Action Icons - Right Side */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2">
+            {/* Wishlist Button */}
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 onAddToWishlist(product);
               }}
-              className="border-slate-300 text-slate-600 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600 text-xs px-3"
+              className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${isInWishlist(product.id)
+                ? 'bg-pink-500 hover:bg-pink-600'
+                : 'bg-white/90 backdrop-blur-sm hover:bg-white'
+                }`}
             >
-              <Heart className={`w-3 h-3 ${isInWishlist(product.id) ? 'fill-current text-pink-500' : ''}`} />
-            </Button>
+              <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'text-white fill-current' : 'text-slate-600'}`} />
+            </button>
+
+            {/* Quick View Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewProduct(product);
+              }}
+              className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200"
+            >
+              <Eye className="w-4 h-4 text-slate-600" />
+            </button>
           </div>
-        </motion.div>
-      </motion.div>
-    );
-  };
 
-  const ProductGridItem = ({ product }: { product: Product }) => {
-    return (
-      <motion.div
-        className="relative overflow-hidden"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.div
-          className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => setSelectedProduct(product)}
-          whileTap={{ scale: 0.98 }}
-        >
-          {product.stock < 5 && (
-            <Badge className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs">
-              Only {product.stock} left
-            </Badge>
-          )}
-
-          {isInWishlist(product.id) && (
-            <div className="absolute top-3 right-3 z-10 w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center shadow-sm">
-              <Heart className="w-4 h-4 text-white fill-current" />
+          {/* Discount Badge - Top Left */}
+          {hasDiscount && (
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-green-500 text-white text-xs px-2 py-1 font-medium flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                {hasDiscount.discount}% OFF
+              </Badge>
             </div>
           )}
 
-          <div className="aspect-square bg-slate-100 relative overflow-hidden">
-            <ImageWithFallback
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          </div>
+          {/* Stock Badge - Bottom Left */}
+          {product.stock < 5 && product.stock > 0 && (
+            <div className="absolute bottom-3 left-3">
+              <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
+                Only {product.stock} left
+              </Badge>
+            </div>
+          )}
 
-          <div className="p-4">
-            <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2">{product.name}</h3>
-            <p className="text-red-600 font-bold text-lg mb-2">₹{product.price.toLocaleString()}</p>
+          {product.stock === 0 && (
+            <div className="absolute bottom-3 left-3">
+              <Badge className="bg-red-500 text-white text-xs px-2 py-1">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
+        </div>
 
-            <div className="flex flex-wrap gap-1 mb-3">
-              {product.tags.slice(0, 2).map(tag => (
-                <Badge key={tag} variant="secondary" className="text-xs bg-slate-100 text-slate-600 border-slate-200">
-                  {tag}
+        {/* Product Info - Flexible Content */}
+        <div className="p-4 flex flex-col flex-1">
+          {/* Name */}
+          <h3 className="font-semibold text-slate-900 line-clamp-2 mb-2">
+            {product.name}
+          </h3>
+
+          {/* Price with Inline Discount */}
+          <div className="mb-3">
+            {hasDiscount ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-lg text-green-600">
+                  ₹{Math.round(discountedPrice).toLocaleString()}
+                </span>
+                <span className="text-sm text-slate-500 line-through">
+                  ₹{product.price.toLocaleString()}
+                </span>
+                <Badge className="bg-green-100 text-green-700 text-xs px-1.5 py-0.5">
+                  -{hasDiscount.discount}%
                 </Badge>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1 mb-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="w-3 h-3 text-yellow-500 fill-current" />
-              ))}
-              <span className="text-xs text-slate-500 ml-1">4.5 (120)</span>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const discount = productDiscounts[product.id]?.discount;
-                  onAddToCart(product, undefined, discount);
-                }}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-2 btn-wrap"
-                disabled={product.stock === 0}
-              >
-                <ShoppingCart className="w-3 h-3 mr-1" />
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToWishlist(product);
-                }}
-                className="border-slate-300 text-slate-600 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600 text-xs"
-              >
-                <Heart className={`w-3 h-3 ${isInWishlist(product.id) ? 'fill-current text-pink-500' : ''}`} />
-              </Button>
-            </div>
+              </div>
+            ) : (
+              <span className="font-bold text-lg text-red-600">₹{product.price.toLocaleString()}</span>
+            )}
           </div>
-        </motion.div>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mb-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="w-3 h-3 text-yellow-500 fill-current" />
+            ))}
+            <span className="text-xs text-slate-500 ml-1">4.5 (120)</span>
+          </div>
+
+
+        </div>
       </motion.div>
     );
   };
@@ -258,17 +223,10 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
           <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold text-slate-900 flex-1">Browse Products</h1>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              className="text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-            >
-              {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
-            </Button>
-          </div>
+          <h1 className="font-bold text-slate-900 flex-1">Browse Products</h1>
+          <Badge variant="secondary" className="bg-red-50 text-red-600 border-red-200 font-medium">
+            {filteredProducts.length}
+          </Badge>
         </div>
 
         {/* Search */}
@@ -282,8 +240,8 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
           />
         </div>
 
-        {/* Categories */}
-        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+        {/* Categories Only */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {categories.map(category => (
             <Button
               key={category}
@@ -292,7 +250,7 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
               onClick={() => setSelectedCategory(category)}
               className={selectedCategory === category
                 ? "bg-red-600 text-white whitespace-nowrap hover:bg-red-700"
-                : "border-slate-300 text-slate-600 whitespace-nowrap hover:border-red-300 hover:text-red-600 hover:bg-red-50"}
+                : "bg-white border-slate-300 text-slate-700 whitespace-nowrap hover:border-red-300 hover:text-red-600 hover:bg-red-50"}
             >
               {category}
             </Button>
@@ -300,41 +258,37 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
         </div>
       </div>
 
-      {/* Products List/Grid */}
+      {/* Products Grid */}
       <div className="p-4 pb-20">
-        {displayedProducts.length === 0 && !isLoading ? (
+        {displayedProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No products found</h3>
-            <p className="text-slate-600">Try adjusting your search or filters</p>
+            <h3 className="font-semibold text-slate-900 mb-2">No products found</h3>
+            <p className="text-slate-600">Try adjusting your search or category</p>
           </div>
         ) : (
           <>
-            <div className={viewMode === 'list' ? "space-y-4" : "grid grid-cols-2 gap-4"}>
-              {displayedProducts.map((product) =>
-                viewMode === 'list' ? (
-                  <ProductListItem key={product.id} product={product} />
-                ) : (
-                  <ProductGridItem key={product.id} product={product} />
-                )
-              )}
+            <div className="grid grid-cols-2 gap-4">
+              {displayedProducts.map((product) => (
+                <CleanProductCard key={product.id} product={product} />
+              ))}
             </div>
 
-            {/* Loading trigger for infinite scroll */}
+            {/* Loading more products */}
             {hasMore && (
-              <div ref={loadingTriggerRef} className="h-10 flex justify-center items-center mt-8">
+              <div ref={loadingTriggerRef} className="h-20 flex justify-center items-center mt-8">
                 {isLoading && (
-                  <>
-                    <Loader2 className="w-6 h-6 animate-spin text-red-600 mr-2" />
-                    <span className="text-slate-600">Loading more products...</span>
-                  </>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-slate-600">Loading more...</span>
+                  </div>
                 )}
               </div>
             )}
 
-            {!hasMore && displayedProducts.length > 6 && (
+            {!hasMore && displayedProducts.length > 8 && (
               <div className="text-center py-8">
                 <p className="text-slate-500">You've seen all products!</p>
               </div>
@@ -343,30 +297,100 @@ export function ProductCatalog({ products, onAddToCart, onAddToWishlist, wishlis
         )}
       </div>
 
-      {/* Product Details Full Page */}
+
+
+      {/* Quick View Modal */}
       <AnimatePresence>
-        {selectedProduct && (
+        {quickViewProduct && (
           <motion.div
-            className="fixed inset-0 bg-white z-50"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setQuickViewProduct(null)}
           >
-            <ProductDetails
-              product={selectedProduct}
-              isInWishlist={isInWishlist(selectedProduct.id)}
-              productDiscount={productDiscounts[selectedProduct.id]}
-              onAddToCart={(product, size, discount) => {
-                onAddToCart(product, size, discount);
-                setSelectedProduct(null);
-              }}
-              onAddToWishlist={(product) => {
-                onAddToWishlist(product);
-              }}
-              onApplyDiscount={onApplyDiscount}
-              onBack={() => setSelectedProduct(null)}
-            />
+            <motion.div
+              className="bg-white rounded-2xl max-w-sm w-full max-h-[70vh] overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-4">
+                  <ImageWithFallback
+                    src={quickViewProduct.image}
+                    alt={quickViewProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">{quickViewProduct.name}</h3>
+
+                {/* Price in Quick View with Inline Discount */}
+                <div className="mb-3">
+                  {productDiscounts[quickViewProduct.id] ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-xl text-green-600">
+                        ₹{Math.round(quickViewProduct.price * (1 - productDiscounts[quickViewProduct.id].discount / 100)).toLocaleString()}
+                      </span>
+                      <span className="text-sm text-slate-500 line-through">
+                        ₹{quickViewProduct.price.toLocaleString()}
+                      </span>
+                      <Badge className="bg-green-100 text-green-700 text-xs px-1.5 py-0.5">
+                        -{productDiscounts[quickViewProduct.id].discount}%
+                      </Badge>
+                    </div>
+                  ) : (
+                    <span className="font-bold text-xl text-red-600">₹{quickViewProduct.price.toLocaleString()}</span>
+                  )}
+                </div>
+
+                <p className="text-slate-600 text-sm mb-4 line-clamp-3">{quickViewProduct.description}</p>
+
+                {/* Size Information */}
+                {quickViewProduct.sizes && quickViewProduct.sizes.length > 0 && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-700 font-medium mb-2">Available Sizes:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {quickViewProduct.sizes.map(size => (
+                        <Badge key={size} variant="outline" className="text-xs border-amber-300 text-amber-700">
+                          {size}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-amber-600 mt-2">Select size in details page</p>
+                  </div>
+                )}
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {quickViewProduct.tags.slice(0, 3).map(tag => (
+                    <Badge key={tag} variant="secondary" className="text-xs bg-slate-100 text-slate-600 border-slate-200">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      onViewProduct(quickViewProduct);
+                      setQuickViewProduct(null);
+                    }}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    disabled={quickViewProduct.stock === 0}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    {quickViewProduct.stock === 0
+                      ? 'Out of Stock'
+                      : quickViewProduct.sizes && quickViewProduct.sizes.length > 0
+                        ? 'View Details & Select Size'
+                        : 'View Details & Add to Cart'
+                    }
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

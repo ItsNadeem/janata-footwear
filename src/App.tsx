@@ -5,18 +5,20 @@ import { LoginScreen } from './components/LoginScreen';
 import { CustomerDashboard } from './components/CustomerDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ProductCatalog } from './components/ProductCatalog';
+import { ProductDetails } from './components/ProductDetails';
 import { Cart } from './components/Cart';
 import { Wishlist } from './components/Wishlist';
 import { Checkout } from './components/Checkout';
+import { Profile } from './components/Profile';
 import { BottomNavigation } from './components/BottomNavigation';
 import { Button } from './components/ui/button';
 import { Toaster } from './components/ui/sonner';
-import { LogOut, User, Shield } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import shoeaLogo from 'figma:asset/22a145728baa3db5f87cbff33464e96e1f1f2ffa.png';
 
 export type UserRole = 'customer' | 'admin';
-export type Screen = 'splash' | 'login' | 'dashboard' | 'catalog' | 'cart' | 'wishlist' | 'checkout' | 'admin';
+export type Screen = 'splash' | 'login' | 'dashboard' | 'catalog' | 'product-details' | 'cart' | 'wishlist' | 'checkout' | 'profile' | 'admin';
 
 export interface Product {
   id: string;
@@ -46,11 +48,30 @@ export interface ProductDiscount {
   attemptsUsed: number;
 }
 
+export interface Order {
+  id: string;
+  items: CartItem[];
+  customerInfo: {
+    name: string;
+    phone: string;
+    email?: string;
+  };
+  paymentMethod: 'upi' | 'cash';
+  upiId?: string;
+  total: number;
+  status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
+  createdAt: Date;
+  estimatedPickupTime?: Date;
+  pickupTime?: Date;
+  notes?: string;
+}
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [userRole, setUserRole] = useState<UserRole>('customer');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ phone: string; name?: string } | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // App state with more sample products for infinite scroll
   const [products, setProducts] = useState<Product[]>([
@@ -373,6 +394,7 @@ export default function App() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [productDiscounts, setProductDiscounts] = useState<Record<string, ProductDiscount>>({});
 
   const handleSplashComplete = () => {
@@ -384,7 +406,10 @@ export default function App() {
     setUserRole(role);
     setIsAuthenticated(true);
     setCurrentScreen('dashboard');
-    toast.success(`Welcome to Janata Footwear!`);
+    const welcomeMessage = role === 'admin'
+      ? 'Welcome Admin! You have full access.'
+      : 'Welcome to Janata Footwear!';
+    toast.success(welcomeMessage);
   };
 
   const handleLogout = () => {
@@ -393,6 +418,7 @@ export default function App() {
     setCurrentScreen('login');
     setCart([]);
     setWishlist([]);
+    setOrders([]);
     setProductDiscounts({});
     toast.success('Logged out successfully');
   };
@@ -409,10 +435,16 @@ export default function App() {
       }
       return [...prev, { ...product, quantity: 1, size, discount }];
     });
-    toast.success('Added to cart!');
+
+    // More informative toast message
+    const message = size
+      ? `Added ${product.name} (Size ${size}) to cart!`
+      : `Added ${product.name} to cart!`;
+    toast.success(message);
   };
 
   const applyDiscount = (productId: string, discount: number) => {
+    // Update the productDiscounts record
     setProductDiscounts(prev => ({
       ...prev,
       [productId]: {
@@ -421,6 +453,16 @@ export default function App() {
         attemptsUsed: prev[productId]?.attemptsUsed || 0
       }
     }));
+
+    // Update cart items to apply the discount
+    setCart(prev =>
+      prev.map(item =>
+        item.id === productId
+          ? { ...item, discount }
+          : item
+      )
+    );
+
     toast.success(`${discount}% discount applied!`);
   };
 
@@ -453,6 +495,11 @@ export default function App() {
     toast.success(wishlist.find(item => item.id === product.id) ? 'Removed from wishlist' : 'Added to wishlist!');
   };
 
+  const handleViewProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setCurrentScreen('product-details');
+  };
+
   const addProduct = (product: Omit<Product, 'id'>) => {
     const newProduct: Product = {
       ...product,
@@ -478,6 +525,57 @@ export default function App() {
     toast.success('Product deleted successfully!');
   };
 
+  const createOrder = (
+    items: CartItem[],
+    customerInfo: { name: string; phone: string; email?: string },
+    paymentMethod: 'upi' | 'cash',
+    upiId?: string
+  ) => {
+    const total = items.reduce((sum, item) => {
+      const itemPrice = item.discount
+        ? item.price * (1 - item.discount / 100)
+        : item.price;
+      return sum + (itemPrice * item.quantity);
+    }, 0);
+
+    const estimatedPickupTime = new Date();
+    estimatedPickupTime.setHours(estimatedPickupTime.getHours() + 2);
+
+    const newOrder: Order = {
+      id: `JF${Date.now().toString().slice(-8)}`,
+      items: [...items],
+      customerInfo,
+      paymentMethod,
+      upiId,
+      total: Math.round(total),
+      status: 'pending',
+      createdAt: new Date(),
+      estimatedPickupTime,
+      notes: `Order placed via ${paymentMethod === 'upi' ? 'UPI payment' : 'pay at store'}`
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+    return newOrder;
+  };
+
+  const updateOrderStatus = (orderId: string, status: Order['status']) => {
+    setOrders(prev =>
+      prev.map(order =>
+        order.id === orderId
+          ? { ...order, status, ...(status === 'completed' ? { pickupTime: new Date() } : {}) }
+          : order
+      )
+    );
+    toast.success(`Order ${orderId} status updated to ${status}`);
+  };
+
+  const updateUserProfile = (updates: Partial<{ name: string; phone: string; email: string }>) => {
+    if (user) {
+      setUser(prev => ({ ...prev!, ...updates }));
+      toast.success('Profile updated successfully!');
+    }
+  };
+
   // Show splash screen
   if (currentScreen === 'splash') {
     return <SplashScreen onComplete={handleSplashComplete} />;
@@ -488,7 +586,30 @@ export default function App() {
     return (
       <>
         <LoginScreen onLogin={handleLogin} />
-        <Toaster />
+        <Toaster
+          position="bottom-center"
+          richColors
+          visibleToasts={3}
+          expand={false}
+          offset={24}
+          toastOptions={{
+            style: {
+              background: '#ffffff',
+              color: '#1e293b',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              fontSize: '14px',
+              fontWeight: '500',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              maxWidth: '360px',
+              minHeight: 'auto',
+            },
+            className: 'toast-bottom',
+            duration: 2500,
+          }}
+          gap={8}
+        />
       </>
     );
   }
@@ -517,18 +638,36 @@ export default function App() {
             products={products}
             onAddToCart={addToCart}
             onAddToWishlist={addToWishlist}
+            onViewProduct={handleViewProduct}
             wishlist={wishlist}
             productDiscounts={productDiscounts}
             onApplyDiscount={applyDiscount}
             onBack={() => setCurrentScreen('dashboard')}
           />
         );
+      case 'product-details':
+        return selectedProduct ? (
+          <ProductDetails
+            product={selectedProduct}
+            isInWishlist={wishlist.some(item => item.id === selectedProduct.id)}
+            productDiscount={productDiscounts[selectedProduct.id]}
+            onAddToCart={(product, size, discount) => {
+              addToCart(product, size, discount);
+              // Navigate back to catalog after adding to cart
+              setCurrentScreen('catalog');
+            }}
+            onAddToWishlist={addToWishlist}
+            onBack={() => setCurrentScreen('catalog')}
+          />
+        ) : null;
       case 'cart':
         return (
           <Cart
             items={cart}
+            productDiscounts={productDiscounts}
             onUpdateQuantity={updateCartQuantity}
             onRemoveItem={removeFromCart}
+            onApplyDiscount={applyDiscount}
             onCheckout={() => setCurrentScreen('checkout')}
             onBack={() => setCurrentScreen('dashboard')}
           />
@@ -538,6 +677,7 @@ export default function App() {
           <Wishlist
             items={wishlist}
             onAddToCart={addToCart}
+            onViewProduct={handleViewProduct}
             onRemoveFromWishlist={addToWishlist}
             onBack={() => setCurrentScreen('dashboard')}
           />
@@ -546,67 +686,75 @@ export default function App() {
         return (
           <Checkout
             items={cart}
-            onOrderComplete={() => {
+            onOrderComplete={(customerInfo, paymentMethod, upiId) => {
+              const order = createOrder(cart, customerInfo, paymentMethod, upiId);
               setCart([]);
-              setCurrentScreen('dashboard');
-              toast.success('Order placed successfully!');
+              setCurrentScreen('profile');
+              toast.success(`Order ${order.id} placed successfully! Check your profile for updates.`);
             }}
             onBack={() => setCurrentScreen('cart')}
           />
         );
+      case 'profile':
+        return user ? (
+          <Profile
+            user={user}
+            orders={orders.filter(order => order.customerInfo.phone === user.phone)}
+            onUpdateProfile={updateUserProfile}
+            onLogout={handleLogout}
+            onBack={() => setCurrentScreen('dashboard')}
+          />
+        ) : null;
       default:
         return <div>Screen not found</div>;
     }
   };
 
   // Determine if we should show bottom navigation (only for customer users)
-  const showBottomNav = userRole === 'customer' && currentScreen !== 'checkout';
+  const showBottomNav = userRole === 'customer' && currentScreen !== 'checkout' && currentScreen !== 'product-details';
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      {/* Header */}
-      <motion.header
-        className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm"
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300 }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 p-1.5 shadow-sm">
-            <img
-              src={shoeaLogo}
-              alt="Janata Footwear Logo"
-              className="w-full h-full object-contain"
-            />
+      {/* Header - Hidden on checkout and product details */}
+      {currentScreen !== 'checkout' && currentScreen !== 'product-details' && (
+        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 p-1.5 shadow-sm">
+              <img
+                src={shoeaLogo}
+                alt="Janata Footwear Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="font-bold text-xl text-slate-900">Janata Footwear</span>
           </div>
-          <span className="font-bold text-xl text-slate-900">Janata Footwear</span>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-2 py-1 bg-red-50 rounded-full border border-red-200">
-            {userRole === 'admin' ? <Shield className="w-4 h-4 text-red-600" /> : <User className="w-4 h-4 text-red-600" />}
-            <span className="text-xs text-red-600 capitalize font-medium">{userRole}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-slate-600 hover:text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-slate-600 hover:text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
-      </motion.header>
+        </header>
+      )}
 
       {/* Main Content */}
       <main className={`flex-1 bg-slate-50 ${showBottomNav ? 'pb-20' : ''}`}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentScreen}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0.8 }}
+            transition={{
+              duration: 0.08,
+              ease: "linear"
+            }}
+            className="w-full"
           >
             {renderScreen()}
           </motion.div>
@@ -620,10 +768,37 @@ export default function App() {
           onNavigate={setCurrentScreen}
           cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
           wishlistCount={wishlist.length}
+          orderCount={user ? orders.filter(order =>
+            order.customerInfo.phone === user.phone &&
+            (order.status === 'pending' || order.status === 'confirmed' || order.status === 'ready')
+          ).length : 0}
         />
       )}
 
-      <Toaster />
+      <Toaster
+        position="bottom-center"
+        richColors
+        visibleToasts={3}
+        expand={false}
+        offset={showBottomNav ? 96 : 24}
+        toastOptions={{
+          style: {
+            background: '#ffffff',
+            color: '#1e293b',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            fontSize: '14px',
+            fontWeight: '500',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            maxWidth: '360px',
+            minHeight: 'auto',
+          },
+          className: 'toast-bottom',
+          duration: 2500,
+        }}
+        gap={8}
+      />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Separator } from './ui/separator';
 import {
   Plus, Package, TrendingUp, Users, DollarSign, Edit, Trash2, Upload, X,
   ImageIcon, Camera, Save, Eye, RotateCcw, Star, CheckCircle, AlertCircle,
@@ -534,7 +533,7 @@ export function AdminDashboard({ products, onAddProduct, onUpdateProduct, onDele
                 <Label className="text-sm font-medium">Category *</Label>
                 <Select
                   value={newProduct.category}
-                  onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+                  onValueChange={(value: any) => setNewProduct({ ...newProduct, category: value })}
                 >
                   <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="Select category" />
@@ -550,7 +549,7 @@ export function AdminDashboard({ products, onAddProduct, onUpdateProduct, onDele
                 <Label className="text-sm font-medium">Brand</Label>
                 <Select
                   value={newProduct.brand}
-                  onValueChange={(value) => setNewProduct({ ...newProduct, brand: value })}
+                  onValueChange={(value: any) => setNewProduct({ ...newProduct, brand: value })}
                 >
                   <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="Select brand" />
@@ -569,7 +568,7 @@ export function AdminDashboard({ products, onAddProduct, onUpdateProduct, onDele
                 <Label className="text-sm font-medium">Color</Label>
                 <Select
                   value={newProduct.color}
-                  onValueChange={(value) => setNewProduct({ ...newProduct, color: value })}
+                  onValueChange={(value: any) => setNewProduct({ ...newProduct, color: value })}
                 >
                   <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="Select color" />
@@ -593,7 +592,7 @@ export function AdminDashboard({ products, onAddProduct, onUpdateProduct, onDele
                 <Label className="text-sm font-medium">Material</Label>
                 <Select
                   value={newProduct.material}
-                  onValueChange={(value) => setNewProduct({ ...newProduct, material: value })}
+                  onValueChange={(value: any) => setNewProduct({ ...newProduct, material: value })}
                 >
                   <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="Select material" />

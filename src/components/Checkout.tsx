@@ -3,48 +3,48 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Separator } from './ui/separator';
-import { ArrowLeft, MapPin, CreditCard, Smartphone, Truck, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Store, CreditCard, Smartphone, CheckCircle, Clock, User } from 'lucide-react';
 import { type CartItem } from '../App';
 
 interface CheckoutProps {
   items: CartItem[];
-  onOrderComplete: () => void;
+  onOrderComplete: (
+    customerInfo: { name: string; phone: string; email?: string },
+    paymentMethod: 'upi' | 'cash',
+    upiId?: string
+  ) => void;
   onBack: () => void;
 }
 
-interface Address {
+interface CustomerInfo {
   name: string;
   phone: string;
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  pincode: string;
+  email: string;
 }
 
-type PaymentMethod = 'upi' | 'cod';
+type PaymentMethod = 'upi' | 'cash';
 
 export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
-  const [step, setStep] = useState<'address' | 'payment' | 'review' | 'processing' | 'success'>('address');
+  const [step, setStep] = useState<'info' | 'payment' | 'review' | 'processing' | 'success'>('info');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
   const [upiId, setUpiId] = useState('');
-  const [address, setAddress] = useState<Address>({
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
     phone: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    pincode: ''
+    email: ''
   });
 
-  const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const deliveryFee = subtotal > 1000 ? 0 : 99;
-  const total = subtotal + deliveryFee;
+  const subtotal = items.reduce((total, item) => {
+    const itemPrice = item.discount
+      ? item.price * (1 - item.discount / 100)
+      : item.price;
+    return total + (itemPrice * item.quantity);
+  }, 0);
 
-  const handleAddressSubmit = () => {
-    if (!address.name || !address.phone || !address.addressLine1 || !address.city || !address.pincode) {
+  const handleInfoSubmit = () => {
+    if (!customerInfo.name || !customerInfo.phone) {
       return;
     }
     setStep('payment');
@@ -62,14 +62,22 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
     setTimeout(() => {
       setStep('success');
       setTimeout(() => {
-        onOrderComplete();
+        onOrderComplete(
+          {
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            email: customerInfo.email || undefined
+          },
+          paymentMethod,
+          paymentMethod === 'upi' ? upiId : undefined
+        );
       }, 3000);
     }, 2000);
   };
 
   const renderStep = () => {
     switch (step) {
-      case 'address':
+      case 'info':
         return (
           <motion.div
             className="space-y-6"
@@ -79,87 +87,67 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+                <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Delivery Address</h2>
-                <p className="text-gray-400 text-sm">Where should we deliver your order?</p>
+                <h2 className="text-xl font-bold text-slate-900">Customer Information</h2>
+                <p className="text-slate-600 text-sm">Enter your details for store pickup</p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-white">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={address.name}
-                    onChange={(e) => setAddress({ ...address, name: e.target.value })}
-                    className="bg-gray-900/50 border-gray-700 text-white"
-                    placeholder="Enter your name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    value={address.phone}
-                    onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                    className="bg-gray-900/50 border-gray-700 text-white"
-                    placeholder="10-digit number"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="address1" className="text-white">Address Line 1 *</Label>
+                <Label htmlFor="name" className="text-slate-900">Full Name *</Label>
                 <Input
-                  id="address1"
-                  value={address.addressLine1}
-                  onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
-                  className="bg-gray-900/50 border-gray-700 text-white"
-                  placeholder="House/Flat number, Building name"
+                  id="name"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                  className="bg-white border-slate-300 text-slate-900"
+                  placeholder="Enter your full name"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address2" className="text-white">Address Line 2</Label>
+                <Label htmlFor="phone" className="text-slate-900">Phone Number *</Label>
                 <Input
-                  id="address2"
-                  value={address.addressLine2}
-                  onChange={(e) => setAddress({ ...address, addressLine2: e.target.value })}
-                  className="bg-gray-900/50 border-gray-700 text-white"
-                  placeholder="Street, Landmark (Optional)"
+                  id="phone"
+                  value={customerInfo.phone}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                  className="bg-white border-slate-300 text-slate-900"
+                  placeholder="10-digit mobile number"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-white">City *</Label>
-                  <Input
-                    id="city"
-                    value={address.city}
-                    onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                    className="bg-gray-900/50 border-gray-700 text-white"
-                    placeholder="City name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pincode" className="text-white">PIN Code *</Label>
-                  <Input
-                    id="pincode"
-                    value={address.pincode}
-                    onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
-                    className="bg-gray-900/50 border-gray-700 text-white"
-                    placeholder="6-digit PIN"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-900">Email Address (Optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                  className="bg-white border-slate-300 text-slate-900"
+                  placeholder="your.email@example.com"
+                />
+              </div>
+            </div>
+
+            {/* Store Information */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <Store className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-800">Store Pickup Information</h3>
+              </div>
+              <div className="text-sm text-slate-700 space-y-1">
+                <p><strong>Store Address:</strong> Janata Footwear, Main Market Street</p>
+                <p><strong>Pickup Hours:</strong> 10:00 AM - 8:00 PM</p>
+                <p><strong>Ready Time:</strong> Within 2 hours of order confirmation</p>
+                <p className="text-blue-600 mt-2">📱 We'll send you a pickup notification via SMS</p>
               </div>
             </div>
 
             <Button
-              onClick={handleAddressSubmit}
-              disabled={!address.name || !address.phone || !address.addressLine1 || !address.city || !address.pincode}
+              onClick={handleInfoSubmit}
+              disabled={!customerInfo.name || !customerInfo.phone}
               className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl btn-wrap btn-responsive"
             >
               Continue to Payment
@@ -180,14 +168,14 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Payment Method</h2>
-                <p className="text-gray-400 text-sm">Choose your preferred payment option</p>
+                <h2 className="text-xl font-bold text-slate-900">Payment Method</h2>
+                <p className="text-slate-600 text-sm">Choose how you'd like to pay</p>
               </div>
             </div>
 
             <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
               <div className="space-y-3">
-                <div className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === 'upi' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-900/30'
+                <div className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === 'upi' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'
                   }`}>
                   <div className="flex items-center space-x-3">
                     <RadioGroupItem value="upi" id="upi" className="text-blue-500" />
@@ -196,10 +184,10 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
                         <Smartphone className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <Label htmlFor="upi" className="font-semibold text-white cursor-pointer">
+                        <Label htmlFor="upi" className="font-semibold text-slate-900 cursor-pointer">
                           UPI Payment
                         </Label>
-                        <p className="text-sm text-gray-400">Pay using UPI ID</p>
+                        <p className="text-sm text-slate-600">Pay now using UPI ID</p>
                       </div>
                     </div>
                   </div>
@@ -211,31 +199,31 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                     >
-                      <Label htmlFor="upiId" className="text-white">UPI ID</Label>
+                      <Label htmlFor="upiId" className="text-slate-900">UPI ID</Label>
                       <Input
                         id="upiId"
                         value={upiId}
                         onChange={(e) => setUpiId(e.target.value)}
-                        className="bg-gray-900/50 border-gray-700 text-white"
+                        className="bg-white border-slate-300 text-slate-900"
                         placeholder="yourname@paytm"
                       />
                     </motion.div>
                   )}
                 </div>
 
-                <div className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === 'cod' ? 'border-green-500 bg-green-500/10' : 'border-gray-700 bg-gray-900/30'
+                <div className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === 'cash' ? 'border-green-500 bg-green-50' : 'border-slate-200 bg-white'
                   }`}>
                   <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="cod" id="cod" className="text-green-500" />
+                    <RadioGroupItem value="cash" id="cash" className="text-green-500" />
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                        <Truck className="w-4 h-4 text-white" />
+                        <Store className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <Label htmlFor="cod" className="font-semibold text-white cursor-pointer">
-                          Cash on Delivery
+                        <Label htmlFor="cash" className="font-semibold text-slate-900 cursor-pointer">
+                          Pay at Store
                         </Label>
-                        <p className="text-sm text-gray-400">Pay when you receive</p>
+                        <p className="text-sm text-slate-600">Pay when you pickup</p>
                       </div>
                     </div>
                   </div>
@@ -246,8 +234,8 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setStep('address')}
-                className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                onClick={() => setStep('info')}
+                className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-100"
               >
                 Back
               </Button>
@@ -275,67 +263,96 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Review Order</h2>
-                <p className="text-gray-400 text-sm">Confirm your order details</p>
+                <h2 className="text-xl font-bold text-slate-900">Review Order</h2>
+                <p className="text-slate-600 text-sm">Confirm your order details before placing</p>
               </div>
             </div>
 
             {/* Order Items */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-white">Order Items</h3>
-              {items.map(item => (
-                <div key={`${item.id}-${item.size}`} className="flex justify-between items-center p-3 bg-gray-900/30 rounded-lg">
-                  <div>
-                    <p className="text-white font-medium">{item.name}</p>
-                    <p className="text-gray-400 text-sm">Qty: {item.quantity} {item.size && `• Size: ${item.size}`}</p>
+              <h3 className="font-semibold text-slate-900">Order Items</h3>
+              {items.map(item => {
+                const itemPrice = item.discount
+                  ? item.price * (1 - item.discount / 100)
+                  : item.price;
+                const itemTotal = itemPrice * item.quantity;
+
+                return (
+                  <div key={`${item.id}-${item.size}`} className="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-lg">
+                    <div>
+                      <p className="text-slate-900 font-medium">{item.name}</p>
+                      <p className="text-slate-600 text-sm">
+                        Qty: {item.quantity} {item.size && `• Size: ${item.size}`}
+                        {item.discount && <span className="text-green-600"> • {item.discount}% OFF</span>}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {item.discount ? (
+                        <div>
+                          <p className="text-slate-500 line-through text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
+                          <p className="text-slate-900 font-semibold">₹{Math.round(itemTotal).toLocaleString()}</p>
+                        </div>
+                      ) : (
+                        <p className="text-slate-900 font-semibold">₹{itemTotal.toLocaleString()}</p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-white font-semibold">₹{(item.price * item.quantity).toLocaleString()}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Delivery Address */}
+            {/* Customer Information */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-white">Delivery Address</h3>
-              <div className="p-3 bg-gray-900/30 rounded-lg">
-                <p className="text-white font-medium">{address.name}</p>
-                <p className="text-gray-400 text-sm">{address.phone}</p>
-                <p className="text-gray-400 text-sm">
-                  {address.addressLine1}, {address.addressLine2}<br />
-                  {address.city} - {address.pincode}
-                </p>
+              <h3 className="font-semibold text-slate-900">Customer Information</h3>
+              <div className="p-3 bg-white border border-slate-200 rounded-lg">
+                <p className="text-slate-900 font-medium">{customerInfo.name}</p>
+                <p className="text-slate-600 text-sm">{customerInfo.phone}</p>
+                {customerInfo.email && (
+                  <p className="text-slate-600 text-sm">{customerInfo.email}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Pickup Information */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-slate-900">Pickup Details</h3>
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Store className="w-4 h-4 text-blue-600" />
+                  <p className="text-blue-800 font-medium">Store Pickup</p>
+                </div>
+                <p className="text-slate-700 text-sm">Janata Footwear, Main Market Street</p>
+                <p className="text-slate-600 text-sm">Ready within 2 hours • Open 10 AM - 8 PM</p>
               </div>
             </div>
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-white">Payment Method</h3>
-              <div className="p-3 bg-gray-900/30 rounded-lg">
-                <p className="text-white font-medium">
-                  {paymentMethod === 'upi' ? 'UPI Payment' : 'Cash on Delivery'}
+              <h3 className="font-semibold text-slate-900">Payment Method</h3>
+              <div className="p-3 bg-white border border-slate-200 rounded-lg">
+                <p className="text-slate-900 font-medium">
+                  {paymentMethod === 'upi' ? 'UPI Payment' : 'Pay at Store'}
                 </p>
                 {paymentMethod === 'upi' && (
-                  <p className="text-gray-400 text-sm">{upiId}</p>
+                  <p className="text-slate-600 text-sm">{upiId}</p>
                 )}
               </div>
             </div>
 
             {/* Price Summary */}
-            <div className="space-y-2 p-4 bg-gray-900/50 rounded-xl border border-gray-700">
-              <div className="flex justify-between text-gray-300">
-                <span>Subtotal</span>
+            <div className="space-y-2 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between text-slate-700">
+                <span>Subtotal ({items.reduce((total, item) => total + item.quantity, 0)} items)</span>
                 <span>₹{subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-gray-300">
-                <span>Delivery Fee</span>
-                <span className={deliveryFee === 0 ? 'text-green-400' : ''}>
-                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
-                </span>
+              <div className="flex justify-between text-green-600">
+                <span>Store Pickup</span>
+                <span>FREE</span>
               </div>
-              <Separator className="bg-gray-700" />
-              <div className="flex justify-between text-white font-bold text-lg">
+              <Separator className="bg-slate-200" />
+              <div className="flex justify-between text-slate-900 font-bold text-lg">
                 <span>Total</span>
-                <span>₹{total.toLocaleString()}</span>
+                <span>₹{subtotal.toLocaleString()}</span>
               </div>
             </div>
 
@@ -343,7 +360,7 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
               <Button
                 variant="outline"
                 onClick={() => setStep('payment')}
-                className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-100"
               >
                 Back
               </Button>
@@ -364,12 +381,12 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/30">
-              <Clock className="w-10 h-10 text-blue-400 animate-pulse" />
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 border border-blue-200">
+              <Clock className="w-10 h-10 text-blue-600 animate-pulse" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Processing Order...</h2>
-            <p className="text-gray-400 text-center">Please wait while we confirm your order</p>
-            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mt-6" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Processing Order...</h2>
+            <p className="text-slate-600 text-center">Please wait while we confirm your order</p>
+            <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mt-6" />
           </motion.div>
         );
 
@@ -380,15 +397,23 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 border border-green-500/30">
-              <CheckCircle className="w-10 h-10 text-green-400" />
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 border border-green-200">
+              <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Order Placed Successfully!</h2>
-            <p className="text-gray-400 text-center mb-6">
-              Your order will be delivered in 2-3 business days
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Order Placed Successfully!</h2>
+            <p className="text-slate-600 text-center mb-6">
+              Your order will be ready for pickup within 2 hours
             </p>
-            <div className="w-full max-w-sm p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-              <p className="text-green-400 font-semibold text-center">Order ID: #JF{Date.now().toString().slice(-6)}</p>
+            <div className="w-full max-w-sm space-y-3">
+              <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                <p className="text-green-800 font-semibold text-center">Order ID: #JF{Date.now().toString().slice(-6)}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 justify-center text-blue-700">
+                  <Store className="w-4 h-4" />
+                  <span className="text-sm">We'll notify you when ready for pickup</span>
+                </div>
+              </div>
             </div>
           </motion.div>
         );
@@ -399,16 +424,16 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="sticky top-0 bg-black/80 backdrop-blur-lg border-b border-gray-700 p-4 z-10">
+      <div className="sticky top-0 bg-white/90 backdrop-blur-lg border-b border-slate-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-4">
           {step !== 'processing' && step !== 'success' && (
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-white">
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
-          <h1 className="text-xl font-bold text-white flex-1">
+          <h1 className="text-xl font-bold text-slate-900 flex-1">
             {step === 'success' ? 'Order Confirmed' : 'Checkout'}
           </h1>
         </div>
@@ -416,17 +441,17 @@ export function Checkout({ items, onOrderComplete, onBack }: CheckoutProps) {
 
       {/* Progress Indicator */}
       {step !== 'processing' && step !== 'success' && (
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-slate-200 bg-white">
           <div className="flex items-center justify-between max-w-md mx-auto">
-            {['address', 'payment', 'review'].map((s, index) => (
+            {['info', 'payment', 'review'].map((s, index) => (
               <div key={s} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step === s ? 'bg-red-500 text-white' :
-                  ['address', 'payment', 'review'].indexOf(step) > index ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'
+                  ['info', 'payment', 'review'].indexOf(step) > index ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
-                  {['address', 'payment', 'review'].indexOf(step) > index ? '✓' : index + 1}
+                  {['info', 'payment', 'review'].indexOf(step) > index ? '✓' : index + 1}
                 </div>
                 {index < 2 && (
-                  <div className={`w-16 h-1 mx-2 ${['address', 'payment', 'review'].indexOf(step) > index ? 'bg-green-500' : 'bg-gray-700'
+                  <div className={`w-16 h-1 mx-2 ${['info', 'payment', 'review'].indexOf(step) > index ? 'bg-green-500' : 'bg-slate-200'
                     }`} />
                 )}
               </div>
